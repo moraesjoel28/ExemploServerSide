@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Contador Server‑Side</title>
+</head>
+<body>
+  <h1>Contador de Data (Server‑Side)</h1>
+  <input type="date" id="dataAlvo" />
+  <button id="startBtn">Iniciar</button>
+  <div id="contagem">Insira uma data e clique em Iniciar</div>
+
+  <script>
+    let intervalo;
+
+    async function solicitaContagem() {
+      const input = document.getElementById('dataAlvo').value;
+      const res = await fetch('/countdown', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ targetDate: input })
+      });
+
+      const data = await res.json();
+      const div = document.getElementById('contagem');
+
+      if (data.error) {
+        div.innerText = 'Data inválida.';
+        clearInterval(intervalo);
+      } else if (data.finished) {
+        div.innerText = 'Chegou a data!';
+        clearInterval(intervalo);
+      } else {
+        div.innerText = `${data.dias} dias, ${data.horas}h ${data.minutos}m ${data.segundos}s`;
+      }
+    }
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      clearInterval(intervalo);
+      solicitaContagem();
+      intervalo = setInterval(solicitaContagem, 1000);
+    });
+  </script>
+</body>
+</html>
